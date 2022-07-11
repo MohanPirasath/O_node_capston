@@ -51,7 +51,7 @@ async function Createconnection() {
   }
   
 
-app.get("/",auth,function (req, res) {
+app.get("/",function (req, res) {
     res.send("backend server created");
   });
 
