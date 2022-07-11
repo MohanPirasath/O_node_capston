@@ -20,6 +20,8 @@ app.use(cors());
 
 const MONGO_URL = process.env.MONGO;
 
+const SECRET_KEY=process.env.SECRET_KEY
+
 async function Createconnection() {
     const Client = new MongoClient(MONGO_URL);
     await Client.connect();
@@ -36,10 +38,10 @@ async function Createconnection() {
     try{
     const token=req.header("x-auth-token");
     console.log(token);
-    const key=process.env.SECRET_KEY
+    // const key=process.env.SECRET_KEY
     console.log(key)
 
-    jwt.verify(token, key)
+    jwt.verify(token, SECRET_KEY)
     next();}
     catch(err){
       res.status(401).send({ 
@@ -92,7 +94,7 @@ app.post("/login",async function(req,res){
     const ispasswordmatch=  await bcrypt.compare(password,alreadystoredpassword)
 
     if(ispasswordmatch){
-      const token=jwt.sign({id:userfromdb._id},process.env.SECRET_KEY)
+      const token=jwt.sign({id:userfromdb._id},SECRET_KEY)
       res.send(
         {
           msg:"successful login",token:token
