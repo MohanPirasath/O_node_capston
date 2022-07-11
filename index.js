@@ -38,7 +38,7 @@ async function Createconnection() {
     try{
     const token=req.header("x-auth-token");
     console.log(token);
-    // const key=process.env.SECRET_KEY
+    const SECRET_KEY=process.env.SECRET_KEY
     console.log(key)
 
     jwt.verify(token, SECRET_KEY)
