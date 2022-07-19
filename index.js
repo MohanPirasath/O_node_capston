@@ -10,16 +10,6 @@ import cookieParser from "cookie-parser";
 import { LocalStorage } from "node-localstorage";
 
 import mongoose from "mongoose";
-import { User } from "./components/users/Schema/userSchema";
-import { Admin } from "./components/users/Schema/adminSchema";
-import { Foods } from "./components/users/Schema/FoodSchema";
-import { PendingTokens } from "./components/users/Schema/PendingTokenSchema";
-import { AcceptedTokens } from "./components/users/Schema/AcceptedTokenSchema";
-import { RejectedTokens } from "./components/users/Schema/RejectedTokenSchema";
-
-// import { LocalStorage } from "node-localstorage";
-
-// https://www.youtube.com/watch?v=enopDSs3DRw
 
 const app = express();
 
@@ -44,7 +34,7 @@ app.use(express.json());
 const MONGO_URL = process.env.MONGO;
 
 const SECRET_KEY = process.env.SECRET_KEY;
-
+//MongoDB commends to make connection with DB
 // async function Createconnection() {
 //     const Client = new MongoClient(MONGO_URL);
 //     await Client.connect();
@@ -65,6 +55,238 @@ const Createconnection = async () => {
 };
 
 export const Client = await Createconnection();
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  employeid: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+});
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+userSchema.methods.generateValidToken = async function () {
+  try {
+    const generatedToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+    this.tokens = this.tokens.concat({ token: generatedToken });
+    await this.save();
+    return generatedToken;
+  } catch (err) {
+    console.log(err);
+  }
+};
+export const User = mongoose.model("User", userSchema);
+
+const adminSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  // email:{
+  //   type: String,
+  //   required:true,
+  //   unique:true,
+  // },
+  password: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+});
+adminSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+adminSchema.methods.generateValidToken = async function () {
+  try {
+    const generatedToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+    this.tokens = this.tokens.concat({ token: generatedToken });
+    await this.save();
+    return generatedToken;
+  } catch (err) {
+    console.log(err);
+  }
+};
+export const Admin = mongoose.model("Admin", adminSchema);
+
+const FoodSchema = new mongoose.Schema({
+  foodname: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+  // email:{
+  //   type: String,
+  //   required:true,
+  //   unique:true,
+  // },
+  description: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+  img: {
+    type: String,
+    required: true,
+  },
+});
+export const Foods = mongoose.model("Foods", FoodSchema);
+
+const PendingTokenSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+
+  Foodname: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+
+  description: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+  img: {
+    type: String,
+    required: true,
+  },
+  Date: {
+    type: String,
+    required: true,
+  },
+  Time: {
+    type: String,
+    required: true,
+  },
+});
+export const PendingTokens = mongoose.model(
+  "PendingTokens",
+  PendingTokenSchema
+);
+
+const AcceptedTokenSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+
+  foodName: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+
+  description: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+  img: {
+    type: String,
+    required: true,
+  },
+  Date: {
+    type: String,
+    required: true,
+  },
+  Time: {
+    type: String,
+    required: true,
+  },
+  OrderId: {
+    type: Number,
+    required: true,
+  },
+});
+export const AcceptedTokens = mongoose.model(
+  "AcceptedTokens",
+  AcceptedTokenSchema
+);
+
+const RejectedTokenSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+
+  foodName: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+
+  description: {
+    type: String,
+    required: true,
+    // unique:true,
+  },
+  img: {
+    type: String,
+    required: true,
+  },
+  Date: {
+    type: String,
+    required: true,
+  },
+  Time: {
+    type: String,
+    required: true,
+  },
+});
+export const RejectedTokens = mongoose.model(
+  "RejectedTokens",
+  RejectedTokenSchema
+);
 
 const auth = async (req, res, next) => {
   try {
